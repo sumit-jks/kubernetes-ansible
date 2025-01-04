@@ -9,10 +9,22 @@
         state: present
         update_cache: yes
 
+    - name: Remove old Kubernetes APT repository
+      file:
+        path: /etc/apt/sources.list.d/kubernetes.list
+        state: absent
+
     - name: Add Kubernetes APT repository
       apt_repository:
-        repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/deb/ /"
         state: present
+
+    - name: Download Kubernetes APT key
+      command: curl -fsSL https://pkgs.k8s.io/core:/stable:/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
 
     - name: Install Kubernetes
       apt:
